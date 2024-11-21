@@ -54,20 +54,17 @@ while cap.isOpened():
     # Create a mask from the segmentation results
     condition = segmentation_results.segmentation_mask > 0.5
 
+    # Remove or comment out the green background creation and combination
     # Create a green background
-    green_bg = np.zeros_like(frame)
-    green_bg[:] = (0, 255, 0)  # Green color in BGR
+    # green_bg = np.zeros_like(frame)
+    # green_bg[:] = (0, 255, 0)  # Green color in BGR
 
     # Combine the frame with the green background using the mask
-    frame = np.where(condition[:, :, None], frame, green_bg)
+    # frame = np.where(condition[:, :, None], frame, green_bg)
 
     # Check if hand landmarks are found
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
-            # Draw hand landmarks and connections
-            mp_drawing.draw_landmarks(
-                frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-
             # Get the positions of all the fingertips
             fingertip_positions = [
                 hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP],
@@ -84,8 +81,8 @@ while cap.isOpened():
             thumb_tip = fingertip_coords[0]
             distances = [calculate_distance(thumb_tip, fingertip_coords[i]) for i in range(1, len(fingertip_coords))]
 
-            # If all distances are below a certain threshold, clear the drawing points
-            if all(distance < 40 for distance in distances):  # Adjust threshold for grip detection
+            # If all distances are below a certain threshold, clear the drawing points (handful gesture)
+            if all(distance < 40 for distance in distances):  # Adjust threshold for handful detection
                 drawing_points.clear()  # Clear the drawing points
 
             # Get the thumb and index finger tip positions
@@ -99,6 +96,13 @@ while cap.isOpened():
             # Calculate the distance between thumb and index finger tips
             pinch_distance = calculate_distance((thumb_tip_x, thumb_tip_y), (index_tip_x, index_tip_y))
 
+            # Calculate the midpoint between thumb and index finger tips
+            midpoint_x = (thumb_tip_x + index_tip_x) // 2
+            midpoint_y = (thumb_tip_y + index_tip_y) // 2
+
+            # Draw a circle at the midpoint to represent the cursor
+            cv2.circle(frame, (midpoint_x, midpoint_y), 5, (255, 0, 0), -1)  # Blue color for the cursor
+
             # If pinch distance is small, we assume a pinch gesture
             if pinch_distance < 10:  # Adjust threshold for pinch detection
                 # Add the pinch position to the drawing points list
@@ -107,7 +111,7 @@ while cap.isOpened():
     # Draw the path
     if drawing_points:
         for i in range(1, len(drawing_points)):
-            cv2.line(frame, drawing_points[i - 1], drawing_points[i], (255, 255, 255), 5)
+            cv2.line(frame, drawing_points[i - 1], drawing_points[i], (0, 0, 255), 5)  # Red color for the line
 
     # Calculate FPS
     curr_time = time.time()
