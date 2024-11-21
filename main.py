@@ -52,7 +52,7 @@ object_width = 20
 object_height = 20
 object_x = random.randint(0, 780)
 object_y = 0
-object_speed = 5
+object_speed = 20
 
 # Score
 score = 0
@@ -116,9 +116,6 @@ while running and cap.isOpened():
             # Move the basket with the hand tracking
             basket_x = screen_x - basket_width // 2
 
-            # Draw a circle at the midpoint to represent the cursor
-            cv2.circle(frame, (midpoint_x, midpoint_y), 5, (255, 0, 0), -1)  # Blue color for the cursor
-
     # Move the object down
     object_y += object_speed
 
@@ -146,24 +143,13 @@ while running and cap.isOpened():
     score_text = font.render(f"Score: {score}", True, (0, 0, 0))
     screen.blit(score_text, (10, 10))
 
+    # Update the display
+    pygame.display.flip()
+
     # Calculate FPS
     curr_time = time.time()
     fps = 1 / (curr_time - prev_time)
     prev_time = curr_time
-
-    # Display FPS on the frame
-    cv2.putText(frame, f'FPS: {int(fps)}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-
-    # Convert the OpenCV frame to a format that Pygame can display
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    frame = np.rot90(frame)
-    frame = pygame.surfarray.make_surface(frame)
-
-    # Blit the frame onto the Pygame screen
-    screen.blit(frame, (0, 0))
-
-    # Update the display
-    pygame.display.flip()
 
     # Limit FPS to 60
     if fps > 60:
